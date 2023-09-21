@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>选举投票页</title>
+    <link th:href="@{favicon.ico}" rel="shortcut icon"/>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/jquery.contextMenu.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/animate.css}" rel="stylesheet"/>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/skins.css}" rel="stylesheet"/>
+    <link th:href="@{/ruoyi/css/ry-ui.css?v=4.6.0}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Inter:400,500,600,700&amp;display=swap'>
+    <link href="../static/css/vote.css" th:href="@{/css/vote.css}" rel="stylesheet">
+    <link href="../static/css/jquery-ui-1.10.4.custom.min.css" th:href="@{/css/jquery-ui-1.10.4.custom.min.css}" rel="stylesheet">
+    <style>
+    body{background:url(../img/vote.jpg) top left;
+    background-size:100%;}
+    </style>
+</head>
+<body>
+    <div class="grid-wrap">
+        <div class="grid-wrap-aside">
+            <h1>欢迎您<span style="color:red" th:text="${user}"/><span th:if="${user != null and user != ''}"><a th:href="@{/logout}"><退出></a></span>,选举规则：</h1><br/>
+            <span>1.推选前先<a th:href="@{/login}"><登陆></a>,没有账号请先<a th:href="@{/register}"><注册></a>.</span><br/>
+            <span>2.每个人只可以推选3人,得票最高当选，可能产生并列者.</span><br/>
+            <span>3.<span style="color:red">以上规则并不重要</span>，重要的是系统采用加密处理和保存投票记录，实现了"<span style="color:red">匿名</span>"投票.</span><br/>
+            <span>4.未来选举出来的总统即便获取了投票记录，也无法恢复出各位的原始意愿.</span><br/>
+            <span>5.计票基于加密过的投票记录计算结果，能产生和明文计票相同的结果.</span><br/>
+            <span>6.以上<span style="color:red">这个方法就叫同态加密</span>.</span><br/>
+            <span>7.如果您想查看其他选民投票记录，先<a th:href="@{/login}"><登陆></a>再点<a th:href="@{/index}"><这里></a>.</span><br/>
+        </div>
+        <div>
+                <div class="grid">
+                    <label class="card" th:each="cddt,cddtStat : ${cddts}">
+                      <input class="card__input" type="checkbox" id="candidates" name="candidates"
+                             th:value="${cddt.id}" />
+                      <div class="card__body">
+                        <div class="card__body-cover"><div class="card__lefttop-corner" data-th-id="${cddt.id}" data-th-data-num="${cddt.votesNum}">
+                            <img class="card__body-cover-image" th:src="${cddt.imgPath}"/>
+                            <span class="card__body-cover-chackbox"> 
+                                <svg class="card__body-cover-chackbox--svg" viewBox="0 0 12 10">
+                                  <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+                                </svg>
+                            </span>
+                            </div>
+                        </div>
+                        <header class="card__body-header">
+                          <h2 class="card__body-header-title" th:text="${cddt.name}"/>
+                          <p class="card__body-header-subtitle" th:text="${cddt.desc}"/>
+                        </header>
+                      </div>
+                    </label>
+                </div>
+                <div style="margin-top:30px"><button class="btn btn-success btn-block" id="btnSubmit" data-loading="正在提交，请稍后...">提交普通投票</button></div>
+                <div style="margin-top:30px"><button class="btn btn-success btn-block" id="btnSubmit_w" data-loading="正在提交，请稍后...">提交加权投票</button></div>
+        </div>
+    </div>
+    <script th:src="@{/js/jquery.min.js?v=4.6.0}"></script>
+    <script th:src="@{/js/jquery-ui-1.10.4.min.js?v=4.6.0}"></script>
+    <script src="../static/js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
+    <!-- 验证插件 -->
+    <script src="../static/ajax/libs/validate/jquery.validate.min.js" th:src="@{/ajax/libs/validate/jquery.validate.min.js}"></script>
+    <script src="../static/ajax/libs/validate/messages_zh.min.js" th:src="@{/ajax/libs/validate/messages_zh.min.js}"></script>
+    <script src="../static/ajax/libs/layer/layer.min.js" th:src="@{/ajax/libs/layer/layer.min.js}"></script>
+    <script src="../static/ajax/libs/blockUI/jquery.blockUI.js" th:src="@{/ajax/libs/blockUI/jquery.blockUI.js}"></script>
+    <script src="../static/ruoyi/js/ry-ui.js" th:src="@{/ruoyi/js/ry-ui.js?v=4.6.0}"></script>
+    <script src="../static/ruoyi/js/common.js" th:src="@{/ruoyi/js/common.js?v=4.6.0}"></script>
+    <script th:inline="javascript">
+        $(function(){
+            var ctx = [[@{/}]];
+            var prefix = ctx + "vote/staff";
+            
+            var csize = $("input[name='candidates']:checked").size();
+            if(csize <= 0 || csize > 3){
+                $("#btnSubmit").attr('disabled', true);
+                $("#btnSubmit_w").attr('disabled', true);
+            }
+            
+            $('.card__input').click(function(){
+                var size = $("input[name='candidates']:checked").size();
+                if(size && (size > 3 || size <= 0)){
+                    $("#btnSubmit").attr('disabled', true);
+                    $("#btnSubmit_w").attr('disabled', true);
+                }
+                if(size && size <= 3){
+                    $("#btnSubmit").attr('disabled', false);
+                    $("#btnSubmit_w").attr('disabled', false);
+                }
+            });
+            
+            $("#btnSubmit").on('click', function(){
+                var ids = '';
+                $("input[name='candidates']:checked").each(function(){
+                    ids += ($(this).val() + ',');
+                });
+                $.operate.ajaxpost(prefix + "/poll", {"ids" : ids}, function(ret){
+                    if(ret.code == 0){
+                        top.location.reload();
+                    }
+                });
+            });
+
+            $("#btnSubmit_w").on('click', function(){
+                var ids = '';
+                $("input[name='candidates']:checked").each(function(){
+                    ids += ($(this).val() + ',');
+                });
+                $.operate.ajaxpost(prefix + "/poll_w", {"ids" : ids}, function(ret){
+                    if(ret.code == 0){
+                        top.location.reload();
+                    }
+                });
+            });
+            
+            $.operate.ajaxpost(prefix + "/vn", {}, function(ret){
+                if(ret && ret.data){
+                    $.each(ret.data, function(key,value){
+                        $("#" + key).attr("data-num", value);
+　　　　　　　　　　});
+                }
+            });
+        });
+    </script>
+</body>
+</html>

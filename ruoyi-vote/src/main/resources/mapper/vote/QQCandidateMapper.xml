@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.vote.mapper.QQCandidateMapper">
+
+    <resultMap type="QQCandidate" id="QQCandidateResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="imgPath"    column="img_path"    />
+        <result property="desc"    column="desc"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectQQCandidateVo">
+        select id, name, img_path, `desc`, create_by, create_time, update_by, update_time from qq_candidate
+    </sql>
+
+    <select id="selectQQCandidateList" parameterType="QQCandidate" resultMap="QQCandidateResult">
+        <include refid="selectQQCandidateVo"/>
+        <where>
+            1 = 1
+            <if test='remark != null  and remark != ""'> and (name like concat('%',#{remark},'%') or `desc` like concat('%',#{remark},'%'))</if>
+        </where>
+        order by update_time asc
+    </select>
+
+    <select id="selectQQCandidateById" parameterType="String" resultMap="QQCandidateResult">
+        <include refid="selectQQCandidateVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertQQCandidate" parameterType="QQCandidate">
+        insert into qq_candidate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="imgPath != null and imgPath != ''">img_path,</if>
+            <if test="desc != null and desc != ''">`desc`,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="name != null and name != ''">#{imgPath},</if>
+            <if test="desc != null and desc != ''">#{desc},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateQQCandidate" parameterType="QQCandidate">
+        update qq_candidate
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="imgPath != null and imgPath != ''">img_path = #{imgPath},</if>
+            <if test="desc != null and desc != ''">`desc` = #{desc},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteQQCandidateById" parameterType="String">
+        delete from qq_candidate where id = #{id}
+    </delete>
+
+    <delete id="deleteQQCandidateByIds" parameterType="String">
+        delete from qq_candidate where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectQQCandidateListByIds" parameterType="String" resultMap="QQCandidateResult">
+        <include refid="selectQQCandidateVo"/>
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

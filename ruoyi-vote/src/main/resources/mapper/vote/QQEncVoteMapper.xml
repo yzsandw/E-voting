@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.vote.mapper.QQEncVoteMapper">
+    
+    <resultMap type="QQEncVote" id="QQEncVoteResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="candidateId"    column="candidate_id"    />
+        <result property="userName"    column="user_name"    />
+        <result property="candidateName"    column="candidate_name"    />
+        <result property="ballotRecord"    column="vote_ballot_record"    />
+        <result property="plainRecord"    column="vote_plain_record"    />
+        <result property="voteTime"    column="vote_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectQQEncVoteVo">
+        select id, user_id, candidate_id, user_name, candidate_name, vote_ballot_record, vote_plain_record, vote_time, create_by, update_by from qq_enc_vote
+    </sql>
+
+    <select id="selectQQEncVoteList" parameterType="QQEncVote" resultMap="QQEncVoteResult">
+        <include refid="selectQQEncVoteVo"/>
+        <where>  
+            1 = 1
+            <if test="candidateId != null  and candidateId != ''"> and candidate_id = #{candidateId}</if>
+            <if test='remark != null  and remark != ""'> and (user_name like concat('%',#{remark},'%') or candidate_name like concat('%',#{remark},'%'))</if>
+            <if test="createTime != null "> and vote_time <![CDATA[>=]]> #{createTime}</if>
+            <if test="updateTime != null "> and vote_time <![CDATA[<]]> #{updateTime}</if>
+        </where>
+        order by vote_time desc
+    </select>
+    
+    <select id="selectQQEncVoteById" parameterType="String" resultMap="QQEncVoteResult">
+        <include refid="selectQQEncVoteVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertQQEncVote" parameterType="QQEncVote">
+        insert into qq_enc_vote
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null and userId != ''">user_id,</if>
+            <if test="candidateId != null and candidateId != ''">candidate_id,</if>
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="voteTime != null">vote_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null and userId != ''">#{userId},</if>
+            <if test="candidateId != null and candidateId != ''">#{candidateId},</if>
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="voteTime != null">#{voteTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQQEncVote" parameterType="QQEncVote">
+        update qq_enc_vote
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null and userId != ''">user_id = #{userId},</if>
+            <if test="candidateId != null and candidateId != ''">candidate_id = #{candidateId},</if>
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="voteTime != null">vote_time = #{voteTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteQQEncVoteById" parameterType="String">
+        delete from qq_enc_vote where id = #{id}
+    </delete>
+
+    <delete id="deleteQQEncVoteByIds" parameterType="String">
+        delete from qq_enc_vote where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <insert id="batchInsertQQEncVote">
+        INSERT INTO qq_enc_vote(id, user_id, user_name, candidate_id, candidate_name, vote_ballot_record, vote_plain_record, vote_time, create_by, update_by)
+        VALUES
+        <foreach collection="qqEncVotes" item="vote" separator=",">
+            (#{vote.id}, #{vote.userId}, #{vote.userName}, #{vote.candidateId}, #{vote.candidateName}, #{vote.ballotRecord}, #{vote.plainRecord}, #{vote.voteTime,jdbcType=TIMESTAMP}, #{vote.createBy}, #{vote.updateBy})
+        </foreach>
+    </insert>
+    
+    <select id="alreadyVoted" resultType="Integer" parameterType="String">
+        select count(id) from qq_enc_vote 
+        <where>  
+            1 = 1
+            <if test="userId != null and userId != ''"> and user_id = #{userId}</if>
+        </where>
+    </select>
+    
+    <select id="countVoterNum" resultType="Integer">
+        select count(a.user_id) from 
+	(select user_id, user_name from qq_enc_vote 
+        group by user_id) a
+    </select>
+</mapper>

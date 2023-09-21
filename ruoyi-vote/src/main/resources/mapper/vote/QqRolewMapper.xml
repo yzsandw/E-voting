@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.vote.mapper.QqRolewMapper">
+    
+    <resultMap type="QqRolew" id="QqRolewResult">
+        <result property="roleNum"    column="role_num"    />
+        <result property="roleWeight"    column="role_weight"    />
+    </resultMap>
+
+    <sql id="selectQqRolewVo">
+        select role_num, role_weight from qq_rolew
+    </sql>
+
+    <select id="selectQqRolewList" parameterType="QqRolew" resultMap="QqRolewResult">
+        <include refid="selectQqRolewVo"/>
+        <where>  
+            <if test="roleWeight != null "> and role_weight = #{roleWeight}</if>
+        </where>
+    </select>
+    
+    <select id="selectQqRolewById" parameterType="Long" resultMap="QqRolewResult">
+        <include refid="selectQqRolewVo"/>
+        where role_num = #{roleNum}
+    </select>
+        
+    <insert id="insertQqRolew" parameterType="QqRolew">
+        insert into qq_rolew
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roleNum != null">role_num,</if>
+            <if test="roleWeight != null">role_weight,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="roleNum != null">#{roleNum},</if>
+            <if test="roleWeight != null">#{roleWeight},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQqRolew" parameterType="QqRolew">
+        update qq_rolew
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleWeight != null">role_weight = #{roleWeight},</if>
+        </trim>
+        where role_num = #{roleNum}
+    </update>
+
+    <delete id="deleteQqRolewById" parameterType="Long">
+        delete from qq_rolew where role_num = #{roleNum}
+    </delete>
+
+    <delete id="deleteQqRolewByIds" parameterType="String">
+        delete from qq_rolew where role_num in 
+        <foreach item="roleNum" collection="array" open="(" separator="," close=")">
+            #{roleNum}
+        </foreach>
+    </delete>
+
+</mapper>

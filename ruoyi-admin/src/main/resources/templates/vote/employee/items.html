@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('投票记录查看列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>关键字：</label>
+                                <input type="text" name="remark"/>
+                            </li>
+                            <li>
+                                <label>投票日期：</label>
+                                <input type="text" class="time-input" placeholder="请选择投票日期" name="voteTime"/>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('vote:employee:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('vote:employee:remove')}]];
+        var prefix = ctx + "vote/employee";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                modalName: "投票记录查看",
+                columns: [{
+                    checkbox: false
+                },
+                {
+                    field: 'userName',
+                    title: '投票人姓名'
+                },
+                {
+                    field: 'candidateName',
+                    title: '候选人姓名'
+                },
+                {
+                    field: 'plainRecord',
+                    title: '明文投票结果'
+                },
+                {
+                    field: 'voteTime',
+                    title: '投票日期'
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>
